@@ -22,14 +22,7 @@ export function LegalAidPage() {
                         <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
                             Connect with pro-bono lawyers, NGOs, and government legal aid services instantly. We believe every Indian citizen deserves fair representation.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button size="lg" className="h-14 px-8 text-lg rounded-full">
-                                Find Lawyer Near Me <MapPin className="ml-2 h-5 w-5" />
-                            </Button>
-                            <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-primary text-primary hover:bg-primary/10">
-                                Call Helpline (15100) <Phone className="ml-2 h-5 w-5" />
-                            </Button>
-                        </div>
+
                     </motion.div>
                 </div>
             </section>
@@ -42,25 +35,28 @@ export function LegalAidPage() {
                             title: "NALSA & SLSA Services",
                             desc: "Connect directly with National/State Legal Services Authorities for free court representation.",
                             icon: <AlertTriangle className="h-8 w-8 text-orange-500" />,
-                            action: "Apply Now"
+                            action: "Apply Now",
+                            link: "https://nalsa.gov.in/"
                         },
                         {
                             title: "NGO Directory",
                             desc: "Browse our curated list of 500+ NGOs specializing in women's rights, labor laws, and tenant disputes.",
                             icon: <MessageCircle className="h-8 w-8 text-green-500" />,
-                            action: "Browse Directory"
+                            action: "Browse Directory",
+                            link: "https://ngodarpan.gov.in/"
                         },
                         {
                             title: "Pro-Bono Lawyers",
                             desc: "Search for lawyers who have volunteered to take up cases for free or at reduced fees.",
                             icon: <MapPin className="h-8 w-8 text-blue-500" />,
-                            action: "Search Lawyers"
+                            action: "Search Lawyers",
+                            link: "https://www.probono-india.in/"
                         }
                     ].map((service, i) => (
                         <motion.div
                             key={i}
                             whileHover={{ y: -5 }}
-                            className="p-8 rounded-3xl bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800"
+                            className="p-8 rounded-3xl bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col"
                         >
                             <div className="h-14 w-14 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6">
                                 {service.icon}
@@ -68,10 +64,14 @@ export function LegalAidPage() {
                             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
                                 {service.title}
                             </h3>
-                            <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+                            <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed flex-grow">
                                 {service.desc}
                             </p>
-                            <Button variant="link" className="p-0 text-primary font-semibold text-lg flex items-center group">
+                            <Button
+                                variant="link"
+                                className="p-0 text-primary font-semibold text-lg flex items-center group w-fit"
+                                onClick={() => window.open(service.link, '_blank')}
+                            >
                                 {service.action} <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                             </Button>
                         </motion.div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FileText, Download, Edit3, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { FileText, Download, Edit3, ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,28 +9,28 @@ export function TemplatesPage() {
 
     const templates = {
         personal: [
-            { title: "Affidavit Name Change", desc: "Format for legal name change declaration" },
-            { title: "Divorce Petition", desc: "Mutual consent divorce filing template" },
-            { title: "Will & Testament", desc: "Standard format for drafting a personal will" },
-            { title: "Power of Attorney", desc: "General Power of Attorney (GPA) format" },
+            { title: "Affidavit Name Change", desc: "Format for legal name change declaration" }, // Local
+            { title: "Divorce Petition", desc: "Mutual consent divorce filing template", link: "https://districts.ecourts.gov.in/" },
+            { title: "Will & Testament", desc: "Standard format for drafting a personal will", link: "https://legalaffairs.gov.in/" },
+            { title: "Power of Attorney", desc: "General Power of Attorney (GPA) format", link: "https://mea.gov.in/Images/pdf/PowerofAttorney.pdf" },
         ],
         business: [
-            { title: "Employment Contract", desc: "Standard hiring agreement for employees" },
-            { title: "NDA (Non-Disclosure)", desc: "Confidentiality agreement for business partners" },
-            { title: "Partnership Deed", desc: "Agreement for forming a partnership firm" },
-            { title: "Freelance Agreement", desc: "Contract for independent contractors" },
+            { title: "Employment Contract", desc: "Standard hiring agreement for employees", link: "https://www.startupindia.gov.in/content/sih/en/tools_templates.html" },
+            { title: "NDA (Non-Disclosure)", desc: "Confidentiality agreement for business partners", link: "https://www.startupindia.gov.in/content/sih/en/tools_templates.html" },
+            { title: "Partnership Deed", desc: "Agreement for forming a partnership firm", link: "https://www.startupindia.gov.in/content/sih/en/tools_templates.html" },
+            { title: "Freelance Agreement", desc: "Contract for independent contractors", link: "https://www.startupindia.gov.in/content/sih/en/tools_templates.html" },
         ],
         property: [
-            { title: "Rental Agreement", desc: "House rent agreement format (11 months)" },
-            { title: "Sale Deed Draft", desc: "Draft for property sale and purchase" },
-            { title: "Lease Termination", desc: "Notice for ending a lease agreement" },
-            { title: "Gift Deed", desc: "Format for gifting property to family members" },
+            { title: "Rental Agreement", desc: "House rent agreement format (11 months)" }, // Local
+            { title: "Sale Deed Draft", desc: "Draft for property sale and purchase", link: "https://dolr.gov.in/" },
+            { title: "Lease Termination", desc: "Notice for ending a lease agreement", link: "https://mohua.gov.in/" },
+            { title: "Gift Deed", desc: "Format for gifting property to family members", link: "https://igregistration.maharashtra.gov.in/" },
         ],
         legal: [
-            { title: "Legal Notice", desc: "Notice for recovery of money or defamation" },
-            { title: "RTI Application", desc: "Format for filing Right to Information request" },
-            { title: "Consumer Complaint", desc: "Complaint format for consumer forum" },
-            { title: "Cheque Bounce Notice", desc: "Section 138 NI Act notice format" },
+            { title: "Legal Notice", desc: "Notice for recovery of money or defamation", link: "https://nalsa.gov.in/" },
+            { title: "RTI Application", desc: "Format for filing Right to Information request", link: "https://rtionline.gov.in/" },
+            { title: "Consumer Complaint", desc: "Complaint format for consumer forum", link: "https://edaakhil.nic.in/" },
+            { title: "Cheque Bounce Notice", desc: "Section 138 NI Act notice format", link: "https://districts.ecourts.gov.in/" },
         ]
     };
 
@@ -64,8 +65,8 @@ export function TemplatesPage() {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-6 py-2 rounded-full text-sm font-medium transition-all capitalize ${activeTab === tab
-                                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                                     }`}
                             >
                                 {tab}
@@ -85,7 +86,7 @@ export function TemplatesPage() {
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                <TemplateCard title={template.title} desc={template.desc} />
+                                <TemplateCard title={template.title} desc={template.desc} link={template.link} />
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -95,7 +96,17 @@ export function TemplatesPage() {
     );
 }
 
-function TemplateCard({ title, desc }) {
+function TemplateCard({ title, desc, link }) {
+    const navigate = useNavigate();
+
+    const handleUseTemplate = () => {
+        if (link) {
+            window.open(link, '_blank');
+        } else {
+            navigate('/templates/edit', { state: { title } });
+        }
+    };
+
     return (
         <div className="group relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
             <div className="flex items-start justify-between mb-4">
@@ -119,8 +130,20 @@ function TemplateCard({ title, desc }) {
                 {desc}
             </p>
 
-            <Button className="w-full group-hover:bg-blue-600 transition-colors mt-auto" variant="outline">
-                Use Template <ArrowRight className="ml-2 h-4 w-4" />
+            <Button
+                className="w-full group-hover:bg-blue-600 group-hover:text-white hover:bg-blue-600 hover:text-white transition-colors mt-auto"
+                variant="outline"
+                onClick={handleUseTemplate}
+            >
+                {link ? (
+                    <>
+                        View Official Model <ExternalLink className="ml-2 h-4 w-4" />
+                    </>
+                ) : (
+                    <>
+                        Use Template <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                )}
             </Button>
         </div>
     );

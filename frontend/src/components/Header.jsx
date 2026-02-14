@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { Scale, FileText, Phone, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/AuthContext"
@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext"
 
 export function Header() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, logout } = useAuth();
     const { addToast } = useToast();
 
@@ -25,31 +26,31 @@ export function Header() {
                 <div className="mr-4 hidden md:flex">
                     <Link className="mr-6 flex items-center space-x-2" to="/">
                         <Scale className="h-6 w-6 text-blue-600" />
-                        <span className="hidden font-bold sm:inline-block">
+                        <span className="hidden font-bold sm:inline-block text-blue-600">
                             Legal Mitra
                         </span>
                     </Link>
                     <nav className="flex items-center space-x-6 text-sm font-medium">
                         <Link
-                            className="transition-colors hover:text-foreground/80 text-foreground"
+                            className={`transition-colors hover:text-foreground/80 ${location.pathname === '/chat' ? 'text-blue-600 font-bold' : 'text-foreground/60'}`}
                             to="/chat"
                         >
                             Chat
                         </Link>
                         <Link
-                            className="transition-colors hover:text-foreground/80 text-foreground/60"
+                            className={`transition-colors hover:text-foreground/80 ${location.pathname === '/resources' ? 'text-blue-600 font-bold' : 'text-foreground/60'}`}
                             to="/resources"
                         >
                             Resources
                         </Link>
                         <Link
-                            className="transition-colors hover:text-foreground/80 text-foreground/60"
+                            className={`transition-colors hover:text-foreground/80 ${location.pathname === '/templates' ? 'text-blue-600 font-bold' : 'text-foreground/60'}`}
                             to="/templates"
                         >
                             Templates
                         </Link>
                         <Link
-                            className="transition-colors hover:text-foreground/80 text-foreground/60"
+                            className={`transition-colors hover:text-foreground/80 ${location.pathname === '/legal-aid' ? 'text-blue-600 font-bold' : 'text-foreground/60'}`}
                             to="/legal-aid"
                         >
                             Legal Aid
@@ -65,7 +66,7 @@ export function Header() {
                             <div className="flex items-center gap-2">
                                 <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground mr-2">
                                     <User className="h-4 w-4" />
-                                    <span>Welcome, {user.name}</span>
+                                    <span>{user.name}</span>
                                 </div>
                                 <Button
                                     variant="ghost"

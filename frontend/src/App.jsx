@@ -2,16 +2,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { ChatInterface } from '@/components/ChatInterface';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { SignupPage } from '@/pages/SignupPage';
 import { ResourcesPage } from '@/pages/ResourcesPage';
 import { TemplatesPage } from '@/pages/TemplatesPage';
+import { TemplateEditorPage } from '@/pages/TemplateEditorPage';
 import { LegalAidPage } from '@/pages/LegalAidPage';
+import { ChatInterface } from '@/components/ChatInterface';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
-
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -40,7 +40,15 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/chat" element={<ChatInterface />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+
+                {/* Protected Routes */}
+                <Route path="/chat" element={
+                  <ProtectedRoute>
+                    <ChatInterface />
+                  </ProtectedRoute>
+                } />
                 <Route path="/resources" element={
                   <ProtectedRoute>
                     <ResourcesPage />
@@ -51,13 +59,16 @@ function App() {
                     <TemplatesPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/templates/edit" element={
+                  <ProtectedRoute>
+                    <TemplateEditorPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="/legal-aid" element={
                   <ProtectedRoute>
                     <LegalAidPage />
                   </ProtectedRoute>
                 } />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
               </Routes>
             </Layout>
           </ToastProvider>
