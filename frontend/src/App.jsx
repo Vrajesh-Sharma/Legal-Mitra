@@ -9,6 +9,10 @@ import { SignupPage } from '@/pages/SignupPage';
 import { ResourcesPage } from '@/pages/ResourcesPage';
 import { TemplatesPage } from '@/pages/TemplatesPage';
 import { LegalAidPage } from '@/pages/LegalAidPage';
+import { AuthProvider } from '@/context/AuthContext';
+import { ToastProvider } from '@/context/ToastContext';
+
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -31,17 +35,33 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/chat" element={<ChatInterface />} />
-            <Route path="/resources" element={<ResourcesPage />} />
-            <Route path="/templates" element={<TemplatesPage />} />
-            <Route path="/legal-aid" element={<LegalAidPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-          </Routes>
-        </Layout>
+        <AuthProvider>
+          <ToastProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/chat" element={<ChatInterface />} />
+                <Route path="/resources" element={
+                  <ProtectedRoute>
+                    <ResourcesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/templates" element={
+                  <ProtectedRoute>
+                    <TemplatesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/legal-aid" element={
+                  <ProtectedRoute>
+                    <LegalAidPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+              </Routes>
+            </Layout>
+          </ToastProvider>
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
