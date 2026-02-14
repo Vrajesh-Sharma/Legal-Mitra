@@ -9,6 +9,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
+import { useNavigate } from 'react-router-dom';
+
 const fetchResponse = async (query) => {
     try {
         const response = await fetch('http://localhost:8000/api/query', {
@@ -43,16 +47,25 @@ const fetchResponse = async (query) => {
 };
 
 export function ChatInterface() {
+    const { user } = useAuth();
+    const { addToast } = useToast();
+    const navigate = useNavigate();
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([
         {
             id: 'welcome',
             role: 'assistant',
-            content: 'Namaste! I am Legal Mitra, your personal legal AI. I can help you understand Indian laws, draft documents, and find solutions. What’s on your mind today?',
+            content: `Namaste ${user?.name || ''}! I am Legal Mitra, your personal legal AI. I can help you understand Indian laws, draft documents, and find solutions. What’s on your mind today?`,
             timestamp: new Date(),
         },
     ]);
     const scrollViewportRef = useRef(null);
+
+    // Rate Limiting Logic
+    const MAX_DEMO_MESSAGES = 10;
+    const [demoCount, setDemoCount] = useState(() => {
+        return parseInt(localStorage.getItem('demo_msg_count') || '0');
+    });
 
     const mutation = useMutation({
         mutationFn: fetchResponse,
@@ -79,6 +92,41 @@ export function ChatInterface() {
 
     const handleSend = () => {
         if (!input.trim()) return;
+
+        // Check Rate Limit for Demo Users
+        if (!user) {
+            if (demoCount >= MAX_DEMO_MESSAGES) {
+                addToast({
+                    title: "Demo Limit Reached",
+                    message: "You've reached the limit of free messages. Please login to continue.",
+                    type: "info",
+                    duration: 5000
+                });
+
+                // Add a system message to chat as well
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: "🔒 You have reached the free demo limit. Please **[Login](/login)** or **[Sign Up](/signup)** to continue your legal journey safely.",
+                    timestamp: new Date(),
+                }]);
+
+                return;
+            }
+
+            // Increment count
+            const newCount = demoCount + 1;
+            setDemoCount(newCount);
+            localStorage.setItem('demo_msg_count', newCount.toString());
+
+            if (newCount === MAX_DEMO_MESSAGES - 3) {
+                addToast({
+                    title: "3 Messages Left",
+                    message: "You have 3 free messages remaining in your demo session.",
+                    type: "info"
+                });
+            }
+        }
 
         const userMessage = {
             id: Date.now().toString(),
@@ -239,9 +287,9 @@ export function ChatInterface() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Describe your legal issue..."
+                        placeholder={!user ? `Describe your legal issue... (${MAX_DEMO_MESSAGES - demoCount} free messages left)` : "Describe your legal issue..."}
                         className="border-0 focus-visible:ring-0 shadow-none text-base h-12 bg-transparent placeholder:text-slate-400"
-                        disabled={mutation.isPending}
+                        disabled={mutation.isPending || (!user && demoCount >= MAX_DEMO_MESSAGES)}
                         autoFocus
                     />
                     <Button
@@ -261,7 +309,7 @@ export function ChatInterface() {
 
             {/* Disclaimer */}
             <div className="text-[10px] text-center text-slate-400 pb-2">
-                Legal Mitra is an AI assistant, not a lawyer. Information provided is for educational purposes only.
+                Legal Mitra is an AI assistant, not a lawyer. {!user && <span className="text-blue-500 cursor-pointer hover:underline" onClick={() => navigate('/signup')}>Sign up for unlimited access.</span>}
             </div>
         </div>
     );
