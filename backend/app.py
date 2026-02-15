@@ -94,14 +94,6 @@ def get_namespaces():
 def query_legal_documents():
     """
     Main endpoint to query legal documents and get AI-generated answers
-    
-    Expected JSON body:
-    {
-        "question": "What is the punishment for theft under IPC?",
-        "top_k": 5,
-        "namespaces": ["ipc"],  // optional
-        "include_sources": true
-    }
     """
     try:
         # Validate request
@@ -112,52 +104,59 @@ def query_legal_documents():
         
         question = data['question'].strip()
         
-        if len(question) < 5:
-            return jsonify({"error": "Question must be at least 5 characters long"}), 400
+        if len(question) < 3:  # Reduced from 5
+            return jsonify({"error": "Question must be at least 3 characters long"}), 400
         
         if len(question) > 500:
             return jsonify({"error": "Question must be less than 500 characters"}), 400
         
-        # Extract parameters
+        # Extract parameters with improved defaults
         top_k = data.get('top_k', Config.TOP_K)
         namespaces = data.get('namespaces', None)
         include_sources = data.get('include_sources', True)
         
         # Validate top_k
-        if not isinstance(top_k, int) or top_k < 1 or top_k > 10:
+        if not isinstance(top_k, int) or top_k < 1 or top_k > 20:  # Increased max
             top_k = Config.TOP_K
         
+        print(f"\n{'='*60}")
+        print(f"📝 Query: {question}")
+        print(f"🔍 Top K: {top_k}")
+        print(f"📚 Namespaces: {namespaces or 'all'}")
+        print(f"{'='*60}")
+        
         # 1. Generate query embedding
-        print(f"Query: {question}")
         query_embedding = embedding_service.embed_query(question)
         
         # 2. Retrieve relevant documents
-        print(f"Retrieving from namespaces: {namespaces or 'all'}")
         retrieved_docs = retrieval_service.retrieve(
             query_embedding=query_embedding,
             top_k=top_k,
             namespaces=namespaces,
-            score_threshold=Config.SCORE_THRESHOLD
+            score_threshold=Config.SCORE_THRESHOLD,
+            query_text=question
         )
         
-        print(f"Retrieved {len(retrieved_docs)} documents")
+        print(f"✅ Retrieved {len(retrieved_docs)} documents")
         
-        # Handle no results
+        # Handle no results with more helpful message
         if not retrieved_docs:
+            print("⚠️  No relevant documents found")
             return jsonify({
                 "question": question,
-                "answer": "I couldn't find relevant information in the legal documents to answer your question. Please try rephrasing or asking about a different topic.",
+                "answer": "I couldn't find relevant information in the legal documents to answer your question. Please try:\n- Rephrasing your question\n- Using more specific legal terms\n- Mentioning specific acts or sections if known\n- Asking about a different legal topic",
                 "sources": [],
                 "metadata": {
-                    "retrieved_count": 0
+                    "retrieved_count": 0,
+                    "threshold_used": Config.SCORE_THRESHOLD
                 }
             }), 200
         
         # 3. Generate answer using LLM
-        print("Generating answer...")
+        print("🤖 Generating answer with Gemini...")
         answer = llm_service.generate_answer(question, retrieved_docs)
         
-        # 4. Prepare sources
+        # 4. Prepare sources with extended preview
         sources = []
         if include_sources:
             for doc in retrieved_docs:
@@ -166,11 +165,11 @@ def query_legal_documents():
                     "act_name": metadata.get('act_name', 'Unknown'),
                     "section_number": metadata.get('section_number', 'N/A'),
                     "text_preview": metadata.get('text_preview', ''),
-                    "score": doc.get('score', 0.0),
+                    "score": round(doc.get('score', 0.0), 4),
                     "namespace": doc.get('namespace', '')
                 })
         
-        print("Response generated successfully")
+        print("✅ Response generated successfully\n")
         
         return jsonify({
             "question": question,
@@ -178,12 +177,14 @@ def query_legal_documents():
             "sources": sources,
             "metadata": {
                 "retrieved_count": len(retrieved_docs),
-                "model_used": Config.GEMINI_MODEL
+                "model_used": Config.GEMINI_MODEL,
+                "threshold_used": Config.SCORE_THRESHOLD,
+                "namespaces_searched": namespaces or "all"
             }
         }), 200
     
     except Exception as e:
-        print(f"Error in /api/query: {e}")
+        print(f"❌ Error in /api/query: {e}")
         traceback.print_exc()
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
@@ -192,13 +193,6 @@ def query_legal_documents():
 def retrieve_only():
     """
     Retrieve relevant documents without LLM generation (for testing/debugging)
-    
-    Expected JSON body:
-    {
-        "question": "What is theft?",
-        "top_k": 5,
-        "namespaces": ["ipc"]  // optional
-    }
     """
     try:
         data = request.get_json()
@@ -218,7 +212,8 @@ def retrieve_only():
             query_embedding=query_embedding,
             top_k=top_k,
             namespaces=namespaces,
-            score_threshold=Config.SCORE_THRESHOLD
+            score_threshold=Config.SCORE_THRESHOLD,
+            query_text=question  # ADD THIS
         )
         
         return jsonify({

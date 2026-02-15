@@ -16,19 +16,24 @@ class Config:
     
     # Gemini
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    GEMINI_MODEL = os.getenv("GEMINI_MODEL")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")  # Default fallback
     
     # Embedding
     EMBEDDING_MODEL = "all-mpnet-base-v2"
     EMBEDDING_DIM = 768
     
     # Retrieval
-    TOP_K = 7
-    SCORE_THRESHOLD = 0.5
+    TOP_K = 10
+    SCORE_THRESHOLD = 0.3
+    MIN_RESULTS = 3
     
     # LLM
-    MAX_TOKENS = 2048
-    TEMPERATURE = 0.3
+    MAX_TOKENS = 3072
+    TEMPERATURE = 0.2
+    
+    # Context
+    MAX_CONTEXT_LENGTH = 8000
+    TEXT_PREVIEW_LENGTH = 600
     
     @classmethod
     def validate(cls):
@@ -36,3 +41,8 @@ class Config:
             raise ValueError("PINECONE_API_KEY not found in environment")
         if not cls.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY not found in environment")
+        
+        print(f"✓ Config validated")
+        print(f"  - Gemini Model: {cls.GEMINI_MODEL}")
+        print(f"  - Index: {cls.INDEX_NAME}")
+        print(f"  - Score Threshold: {cls.SCORE_THRESHOLD}")
